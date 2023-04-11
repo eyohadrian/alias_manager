@@ -1,0 +1,54 @@
+#!/bin/bash
+#!/bin/bash
+
+ALIAS_FILE="aliases.sh"
+
+add_alias() {
+    local alias_name="$1"
+    local command="$2"
+    echo "alias ${alias_name}=\"${command}\"" >> "$ALIAS_FILE"
+    echo "Alias '${alias_name}' added."
+}
+
+delete_alias() {
+    local alias_name="$1"
+    if grep -q "^alias ${alias_name}=" "$ALIAS_FILE"; then
+        sed -i '' "/^alias ${alias_name}=/d" "$ALIAS_FILE"
+        echo "Alias '${alias_name}' removed."
+    else
+        echo "Alias '${alias_name}' does not exist."
+    fi
+}
+
+list_aliases() {
+    if [ -f "$ALIAS_FILE" ]; then
+        sed -e 's/^alias \([^=]*\)=\(.*\)$/\1: \2/' -e 's/"//g' "$ALIAS_FILE"
+    else
+        echo "No aliases found."
+    fi
+}
+
+if [ "$#" -eq 0 ]; then
+    echo "Usage: $0 (-a alias command | -d alias | -l)"
+    exit 1
+fi
+
+while getopts "a:d:l" option; do
+    case "$option" in
+        a)
+            shift
+            add_alias "$1" "$2"
+            ;;
+        d)
+            delete_alias "$OPTARG"
+            ;;
+        l)
+            list_aliases
+            ;;
+        *)
+            echo "Usage: $0 (-a alias command | -d alias | -l)"
+            exit 1
+            ;;
+    esac
+done
+
